@@ -1,0 +1,46 @@
+<.header>
+  <%= @city_name %> Dispatcher
+  <:actions>
+    <.button
+      phx-click={JS.push("create", value: %{})}
+      >
+      Create superhero
+    </.button>
+  </:actions>
+</.header>
+
+<.table 
+  id="nodes" 
+  rows={@node_list} 
+  >
+  <:col :let={node} label="Connected dispatch centers"><%= node %></:col>
+  <:action :let={node}>
+    <.button
+    phx-click={JS.push("stop_node", value: %{node: node})}
+    >
+    Shutdown
+  </.button>
+  </:action>
+</.table>
+
+<.table 
+  id="superheroes" 
+  rows={@superheroes} 
+  >
+  <:col :let={superhero} label="Name"><%= superhero.name %></:col>
+  <:col :let={superhero} label="Patrolling"><%= if superhero.is_patrolling, do: "Fighting Crime", else: "Resting" %></:col>
+  <:col :let={superhero} label="Health"><%= superhero.health %></:col>
+  <:col :let={superhero} label="Wins"><%= superhero.fights_won %></:col>
+  <:col :let={superhero} label="Losses"><%= superhero.fights_lost %></:col>
+  <:col :let={superhero} label="Location"><%= superhero.node %></:col>
+
+  <:action :let={superhero}>
+      <.button
+      phx-click={JS.push("delete", value: %{name: superhero.name})}
+    >
+      Terminate
+    </.button>
+  </:action>
+</.table>
+
+
