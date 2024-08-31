@@ -11,45 +11,45 @@ defmodule Dispatch.SuperheroApi do
   alias Horde.{DynamicSupervisor, Registry}
   require Logger
 
-  def start(name) do
+  def start(id) do
     child_spec = %{
-      id: name,
-      start: {SuperheroServer, :start_link, [name]}
+      id: id,
+      start: {SuperheroServer, :start_link, [id]}
     }
 
     case DynamicSupervisor.start_child(SuperheroSupervisor, child_spec) do
       {:ok, pid} ->
-        Logger.info("Superhero created successfully: #{name} with PID #{inspect(pid)}")
+        Logger.info("Superhero created successfully: #{id} with PID #{inspect(pid)}")
         {:ok, pid}
 
       {:error, reason} ->
-        Logger.error("Failed to create superhero: #{name} due to #{inspect(reason)}")
+        Logger.error("Failed to create superhero: #{id} due to #{inspect(reason)}")
         {:error, reason}
     end
   end
 
-  def stop(name) do
-    case SuperheroRegistryHandler.get_pid_for_superhero(name) do
+  def stop(id) do
+    case SuperheroRegistryHandler.get_pid_for_superhero(id) do
       nil ->
         {:error, :not_found}
 
       pid ->
         :ok = DynamicSupervisor.terminate_child(SuperheroSupervisor, pid)
-        :ok = Registry.unregister(SuperheroRegistry, name)
+        :ok = Registry.unregister(SuperheroRegistry, id)
 
         {:ok, :terminated}
     end
   end
 
-  def get_details(name) do
-    GenServer.call(SuperheroServer.via_tuple(name), :get_details)
+  def get_details(id) do
+    GenServer.call(SuperheroServer.via_tuple(id), :get_details)
   end
 
   def get_all_superheroes_with_details do
     SuperheroRegistryHandler.get_all_superheroes()
-    |> Enum.map(fn name ->
-      get_details(name)
-      |> Map.put(:node, SuperheroRegistryHandler.get_node_for_superhero(name))
+    |> Enum.map(fn id ->
+      get_details(id)
+      |> Map.put(:node, SuperheroRegistryHandler.get_node_for_superhero(id))
     end)
   end
 end

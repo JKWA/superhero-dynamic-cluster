@@ -1,13 +1,14 @@
 defmodule DispatchWeb.DispatchLive.Index do
   use DispatchWeb, :live_view
-  alias Dispatch.{PollServer, SuperheroApi}
+  alias Dispatch.{SuperheroApi, Store}
   alias Phoenix.PubSub
+  alias Store.SuperheroStore
 
   require Logger
 
   @impl true
   def mount(_params, _session, socket) do
-    PubSub.subscribe(Dispatch.PubSub, PollServer.topic())
+    PubSub.subscribe(Dispatch.PubSub, Store.PubSub.topic())
     :net_kernel.monitor_nodes(true, [])
 
     new_socket =
@@ -21,29 +22,31 @@ defmodule DispatchWeb.DispatchLive.Index do
 
   @impl true
   def handle_event("create", _params, socket) do
-    superhero_name = "#{Faker.Superhero.prefix()} #{Faker.Superhero.name()}"
+    superhero_id = UUID.uuid4()
 
-    case SuperheroApi.start(superhero_name) do
+    case SuperheroApi.start(superhero_id) do
       {:ok, _pid} ->
         {:noreply, socket}
 
       {:error, reason} ->
-        Logger.error("Failed to create superhero: #{superhero_name} due to #{inspect(reason)}")
+        Logger.error("Failed to create superhero: #{superhero_id} due to #{inspect(reason)}")
 
         new_socket =
-          socket |> put_flash(:error, "Failed to create superhero: #{superhero_name}.")
+          socket |> put_flash(:error, "Failed to create superhero: #{superhero_id}.")
 
         {:noreply, new_socket}
     end
   end
 
   @impl true
-  def handle_event("delete", %{"name" => name}, socket) do
-    case SuperheroApi.stop(name) do
+  def handle_event("delete", %{"id" => id}, socket) do
+    case SuperheroApi.stop(id) do
       {:ok, _} ->
+        SuperheroStore.delete_superhero(id)
+
         updated_superheroes =
           Enum.filter(socket.assigns.superheroes, fn superhero ->
-            superhero.name != name
+            superhero.id != id
           end)
 
         new_socket =
@@ -52,11 +55,11 @@ defmodule DispatchWeb.DispatchLive.Index do
 
         {:noreply, new_socket}
 
-      {:error, _} ->
-        Logger.error("Failed to delete superhero #{name}.")
+      {:error, reason} ->
+        Logger.error("Failed to delete superhero #{id} #{inspect(reason)}.")
 
         new_socket =
-          socket |> put_flash(:error, "Failed to delete superhero #{name}.")
+          socket |> put_flash(:error, "Failed to delete superhero #{id}.")
 
         {:noreply, new_socket}
     end

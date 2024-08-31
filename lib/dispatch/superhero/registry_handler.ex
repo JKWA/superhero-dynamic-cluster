@@ -7,8 +7,8 @@ defmodule Dispatch.SuperheroRegistryHandler do
     Registry.select(SuperheroRegistry, [{{:"$1", :_, :_}, [], [:"$1"]}])
   end
 
-  def get_pid_for_superhero(name) do
-    case Registry.lookup(SuperheroRegistry, name) do
+  def get_pid_for_superhero(id) do
+    case Registry.lookup(SuperheroRegistry, id) do
       [{pid, _}] ->
         pid
 
@@ -17,8 +17,8 @@ defmodule Dispatch.SuperheroRegistryHandler do
     end
   end
 
-  def get_node_for_superhero(name) do
-    case Registry.lookup(SuperheroRegistry, name) do
+  def get_node_for_superhero(id) do
+    case Registry.lookup(SuperheroRegistry, id) do
       [{pid, _}] ->
         node(pid)
 

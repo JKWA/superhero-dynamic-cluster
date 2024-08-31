@@ -28,7 +28,7 @@
   rows={@superheroes} 
   >
   <:col :let={superhero} label="Name"><%= superhero.name %></:col>
-  <:col :let={superhero} label="Patrolling"><%= if superhero.is_patrolling, do: "Fighting Crime", else: "Resting" %></:col>
+  <:col :let={superhero} label="Status"><%= if superhero.is_patrolling, do: "Fighting Crime", else: "Resting" %></:col>
   <:col :let={superhero} label="Health"><%= superhero.health %></:col>
   <:col :let={superhero} label="Wins"><%= superhero.fights_won %></:col>
   <:col :let={superhero} label="Losses"><%= superhero.fights_lost %></:col>
@@ -36,7 +36,7 @@
 
   <:action :let={superhero}>
       <.button
-      phx-click={JS.push("delete", value: %{name: superhero.name})}
+      phx-click={JS.push("delete", value: %{id: superhero.id})}
     >
       Terminate
     </.button>

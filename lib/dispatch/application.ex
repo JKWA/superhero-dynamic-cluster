@@ -4,17 +4,12 @@ defmodule Dispatch.Application do
 
   @impl true
   def start(_type, _args) do
-    topologies = [
-      dispatch_gossip_cluster: [
-        strategy: Cluster.Strategy.Gossip,
-        config: [
-          port: 45892
-        ]
-      ]
-    ]
+    topology = Application.get_env(:libcluster, :topologies)
+    nodes = topology[:dispatch_gossip_cluster][:config][:hosts]
 
     children = [
-      {Cluster.Supervisor, [topologies, [name: Dispatch.ClusterSupervisor]]},
+      {Cluster.Supervisor, [topology, [name: Dispatch.ClusterSupervisor]]},
+      {Dispatch.Store.Setup, [nodes: nodes]},
       {Horde.Registry, name: Dispatch.SuperheroRegistry, keys: :unique, members: :auto},
       {
         Horde.DynamicSupervisor,
@@ -26,7 +21,7 @@ defmodule Dispatch.Application do
       },
       DispatchWeb.Telemetry,
       {Phoenix.PubSub, name: Dispatch.PubSub},
-      Dispatch.PollServer,
+      Dispatch.Store.PubSub,
       DispatchWeb.Endpoint
     ]
 

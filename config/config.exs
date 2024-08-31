@@ -49,6 +49,19 @@ config :phoenix, :json_library, Jason
 
 config :dispatch, :city_name, System.get_env("CITY_NAME") || "default_city"
 
-# Import environment specific config. This must remain at the bottom
-# of this file so it overrides the configuration defined above.
+config :libcluster,
+  topologies: [
+    dispatch_gossip_cluster: [
+      strategy: Cluster.Strategy.Gossip,
+      config: [
+        hosts: [:"gotham@127.0.0.1", :"metropolis@127.0.0.1", :"capitol@127.0.0.1"],
+        port: 45892
+      ]
+    ]
+  ]
+
+config :mnesiac,
+  stores: [Dispatch.ExampleStore],
+  schema_type: :ram_copies
+
 import_config "#{config_env()}.exs"
