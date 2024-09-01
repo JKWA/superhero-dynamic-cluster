@@ -11,11 +11,13 @@ defmodule DispatchWeb.DispatchLive.Index do
     PubSub.subscribe(Dispatch.PubSub, Store.PubSub.topic())
     :net_kernel.monitor_nodes(true, [])
 
+    {:ok, superheroes} = SuperheroStore.get_all_superheroes()
+
     new_socket =
       socket
       |> assign(:city_name, Application.get_env(:dispatch, :city_name))
-      |> assign(:superheroes, [])
       |> assign(:node_list, Node.list())
+      |> stream(:superheroes, superheroes)
 
     {:ok, new_socket}
   end
@@ -44,16 +46,7 @@ defmodule DispatchWeb.DispatchLive.Index do
       {:ok, _} ->
         SuperheroStore.delete_superhero(id)
 
-        updated_superheroes =
-          Enum.filter(socket.assigns.superheroes, fn superhero ->
-            superhero.id != id
-          end)
-
-        new_socket =
-          socket
-          |> assign(:superheroes, updated_superheroes)
-
-        {:noreply, new_socket}
+        {:noreply, socket}
 
       {:error, reason} ->
         Logger.error("Failed to delete superhero #{id} #{inspect(reason)}.")
@@ -86,9 +79,27 @@ defmodule DispatchWeb.DispatchLive.Index do
   end
 
   @impl true
-  def handle_info({:update_data, data}, socket) do
-    {:noreply, socket |> assign(:superheroes, data)}
+  def handle_info({:update_superhero, superhero}, socket) do
+    new_socket =
+      socket
+      |> stream_insert(:superheroes, superhero)
+
+    {:noreply, new_socket}
   end
+
+  @impl true
+  def handle_info({:delete_superhero, superhero}, socket) do
+    new_socket =
+      socket
+      |> stream_delete(:superheroes, superhero)
+
+    {:noreply, new_socket}
+  end
+
+  # @impl true
+  # def handle_info({:update_data, data}, socket) do
+  #   {:noreply, socket |> assign(:superheroes, data)}
+  # end
 
   @impl true
   def handle_info({:nodeup, node}, socket) do

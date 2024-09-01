@@ -123,7 +123,7 @@ defmodule Dispatch.SuperheroServer do
   end
 
   defp handle_win(superhero) do
-    updated_superhero = Map.update(superhero, :fights_won, &(&1 + 1), @default_fights)
+    updated_superhero = Map.update(superhero, :fights_won, @default_fights, &(&1 + 1))
     Logger.info("#{superhero.name} won a fight, total wins: #{updated_superhero.fights_won}")
     send(self(), {:update_superhero, updated_superhero})
     updated_superhero

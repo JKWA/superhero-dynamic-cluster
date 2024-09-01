@@ -92,22 +92,22 @@ defmodule Dispatch.Store.SuperheroStore do
     end
   end
 
-  defp convert_to_tuple(%Superhero{
-         id: id,
-         name: name,
-         node: node,
-         is_patrolling: is_patrolling,
-         last_updated: last_updated,
-         fights_won: fights_won,
-         fights_lost: fights_lost,
-         health: health
-       }) do
+  def convert_to_tuple(%Superhero{
+        id: id,
+        name: name,
+        node: node,
+        is_patrolling: is_patrolling,
+        last_updated: last_updated,
+        fights_won: fights_won,
+        fights_lost: fights_lost,
+        health: health
+      }) do
     {id, name, node, is_patrolling, last_updated, fights_won, fights_lost, health}
   end
 
-  defp convert_to_struct(
-         {id, name, node, is_patrolling, last_updated, fights_won, fights_lost, health}
-       ) do
+  def convert_to_struct(
+        {id, name, node, is_patrolling, last_updated, fights_won, fights_lost, health}
+      ) do
     %Superhero{
       id: id,
       name: name,

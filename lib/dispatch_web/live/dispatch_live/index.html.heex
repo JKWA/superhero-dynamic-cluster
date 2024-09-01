@@ -25,16 +25,16 @@
 
 <.table 
   id="superheroes" 
-  rows={@superheroes} 
+  rows={@streams.superheroes}
   >
-  <:col :let={superhero} label="Name"><%= superhero.name %></:col>
-  <:col :let={superhero} label="Status"><%= if superhero.is_patrolling, do: "Fighting Crime", else: "Resting" %></:col>
-  <:col :let={superhero} label="Health"><%= superhero.health %></:col>
-  <:col :let={superhero} label="Wins"><%= superhero.fights_won %></:col>
-  <:col :let={superhero} label="Losses"><%= superhero.fights_lost %></:col>
-  <:col :let={superhero} label="Location"><%= superhero.node %></:col>
+  <:col :let={{_id, superhero}} label="Name"><%= superhero.name %></:col>
+  <:col :let={{_id, superhero}} label="Status"><%= if superhero.is_patrolling, do: "Fighting Crime", else: "Resting" %></:col>
+  <:col :let={{_id, superhero}} label="Health"><%= superhero.health %></:col>
+  <:col :let={{_id, superhero}} label="Wins"><%= superhero.fights_won %></:col>
+  <:col :let={{_id, superhero}} label="Losses"><%= superhero.fights_lost %></:col>
+  <:col :let={{_id, superhero}} label="Location"><%= superhero.node %></:col>
 
-  <:action :let={superhero}>
+  <:action :let={{_id, superhero}}>
       <.button
       phx-click={JS.push("delete", value: %{id: superhero.id})}
     >

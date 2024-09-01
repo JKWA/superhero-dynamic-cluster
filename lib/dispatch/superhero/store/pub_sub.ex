@@ -1,5 +1,6 @@
 defmodule Dispatch.Store.PubSub do
   use GenServer
+  alias Dispatch.Superhero
   alias Phoenix.PubSub
   alias Dispatch.Store.SuperheroStore
 
@@ -26,7 +27,18 @@ defmodule Dispatch.Store.PubSub do
         state
       ) do
     Logger.info("Superhero updated or added: #{inspect(superhero_details)}")
-    broadcast_latest_superheroes()
+
+    superhero =
+      superhero_details
+      |> Tuple.delete_at(0)
+      |> SuperheroStore.convert_to_struct()
+
+    PubSub.broadcast(
+      Dispatch.PubSub,
+      topic(),
+      {:update_superhero, superhero}
+    )
+
     {:noreply, state}
   end
 
@@ -36,23 +48,15 @@ defmodule Dispatch.Store.PubSub do
         state
       ) do
     Logger.info("Superhero deleted: #{inspect(superhero_details)}")
-    broadcast_latest_superheroes()
+
+    {:superhero, id} = superhero_details
+
+    PubSub.broadcast(
+      Dispatch.PubSub,
+      topic(),
+      {:delete_superhero, %Superhero{id: id}}
+    )
+
     {:noreply, state}
-  end
-
-  defp broadcast_latest_superheroes do
-    case SuperheroStore.get_all_superheroes() do
-      {:ok, superheroes} ->
-        Logger.info("Broadcasting superhero updates: #{inspect(superheroes)}")
-
-        PubSub.broadcast(
-          Dispatch.PubSub,
-          topic(),
-          {:update_data, superheroes}
-        )
-
-      {:error, reason} ->
-        Logger.error("Failed to retrieve superheroes: #{inspect(reason)}")
-    end
   end
 end
